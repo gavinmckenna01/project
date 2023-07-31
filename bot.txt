@@ -1,18 +1,5 @@
 
 
-
-Begin forwarded message:
-From: Alfonsus Rahardjo <alrahardjo@gmail.com>
-Date: July 31, 2023 at 10:17:13 AM EDT
-To: "McKenna, Gavin Patrick" <gpm49@miami.edu>
-Cc: Ryan Norkus <ryananorkus4@gmail.com>, callista.s.harrold@lmco.com, Eunicelee0927@gmail.com
-Subject: [EXTERNAL] Re: intern project code
- 
-CAUTION: This email originated from outside the organization. DO NOT CLICK ON LINKS or OPEN ATTACHMENTS unless you know and trust the sender.
-
-update: tried to add the hand signals and RGB LED 
-
-
 //all files need to be in project directory to access library functions
 
 #include 
