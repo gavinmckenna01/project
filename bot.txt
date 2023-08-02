@@ -1,7 +1,3 @@
-
-
-//all files need to be in project directory to access library functions
-
 #include 
 <Arduino.h>
 
@@ -28,9 +24,9 @@
 
 
 
-uint8_t leftLine = A9;
+//uint8_t leftLine = A9;
 
-uint8_t rightLine = A10;
+//uint8_t rightLine = A10;
 
 
 
@@ -66,8 +62,10 @@ MeNewRGBLed right_LED(A14,
 
 
 
-MeLineFollower lineFinder(PORT_3); /* Line Finder module can only be connected to PORT_3, PORT_4,
- PORT_5, PORT_6 of base shield. */
+MeSingleLineFollower leftLineFinder(A9); /* Line Finder module can only be connected to PORT_3,
+ PORT_4, PORT_5, PORT_6 of base shield. */
+
+MeSingleLineFollower rightLineFinder(A10);
 
 
 
@@ -287,7 +285,7 @@ else if
 
 
 
-    delay(500);
+    delay(750);
 
 
 
@@ -295,7 +293,7 @@ else if
 
 
 
-    delay(750);
+    delay(1000);
 
 
 
@@ -314,7 +312,7 @@ else if
 
 
 
-    delay(500);
+    delay(750);
 
 
 
@@ -322,7 +320,7 @@ else if
 
 
 
-    delay(750);
+    delay(1000);
 
 
 
@@ -341,7 +339,7 @@ else if
 
 
 
-    delay(500);
+    delay(750);
 
 
 
@@ -349,7 +347,7 @@ else if
 
 
 
-    delay(750);
+    delay(1000);
 
 
 
@@ -372,22 +370,60 @@ speed)
 
 
 
-  int dataLeft = 
-analogRead(leftLine);
+  if((leftLineFinder.onLine()) &&
+(rightLineFinder.onLine()))
+
+  {
+
+    forward(speed);
+
+  }
+
+  else 
+if ((leftLineFinder.onLine()) &&
+(!rightLineFinder.onLine()))
+
+  {
+
+    rotateLeft(speed);
+
+  }
+
+  else 
+if ((!leftLineFinder.onLine()) &&
+(rightLineFinder.onLine()))
+
+  {
+
+    rotateRight(speed);
+
+  }
+
+  else
+
+  {
+
+    rotateLeft(speed);
+
+  }
 
 
 
-  int dataRight = 
-analogRead(rightLine);
+  /*
+
+
+
+  int dataLeft = analogRead(leftLine);
+
+
+
+  int dataRight = analogRead(rightLine);
 
 
 
 
 
-  if 
-((dataLeft == 0) &&
-(dataRight == 
-0)) 
+  if ((dataLeft == 0) && (dataRight == 0))
 
   {
 
@@ -399,10 +435,7 @@ analogRead(rightLine);
 
   } 
 
-  else 
-if ((dataLeft == 
-0) && 
-(dataRight != 0))
+  else if ((dataLeft == 0) && (dataRight != 0))
 
   {
 
@@ -414,10 +447,7 @@ if ((dataLeft ==
 
   } 
 
-  else 
-if ((dataLeft != 
-0) && 
-(dataRight == 0))
+  else if ((dataLeft != 0) && (dataRight == 0))
 
   {
 
@@ -429,9 +459,11 @@ if ((dataLeft !=
 
   {
 
-    rotateRight(speed);
+    rotateLeft(speed);
 
   }
+
+  */
 
 
 
@@ -439,93 +471,28 @@ if ((dataLeft !=
 
 
 
-void 
+bool 
 handSignal()
 
 {
 
-  //LED pulse to signal Hand Signal Read mode
 
-  // i just put random colors
-
-  left_LED.setColor(100,
-100, 200);
-
-  left_LED.show();
-
-
-
-  delay(250);
-
-
-
-  left_LED.setColor(100,
-0, 20);
-
-  left_LED.show();
-
-
-
-  delay(250);
-
-
-
-  right_LED.setColor(200,
-100, 0);
-
-  left_LED.setColor(0,
-0, 0);
-
-  left_LED.show();
-
-  right_LED.show();
-
-
-
-  delay(250);
-
-
-
-  right_LED.setColor(0,
-0, 0);
-
-  right_LED.show();
-
-  left_LED.setColor(50,
-50, 60);
-
-  left_LED.show();
-
-
-
-  delay(250);
-
-
-
-  left_LED.setColor(0,
-0, 0);
-
-  left_LED.show();
-
-
-
-  //correct signal (right, left) flashes green, gets out of loop
-
-  //anything else flashes red
 
   if(rightBarrier.isBarried())
 
   {
 
-    //delay(150);
+    delay(1000);
 
 
 
-    if(leftBarrier.isBarried())
+    //correct signal is now both left and right, then just right
+
+    if(rightBarrier.isBarried())
 
     {
 
-      //delay(150);
+      delay(1000);
 
 
 
@@ -533,177 +500,19 @@ handSignal()
 
       {
 
-        //delay(150);
-
-
-
-        if(rightBarrier.isBarried())
-
-        {
-
-          left_LED.setColor(0,
-255, 0);
-
-          left_LED.show();
-
-
-
-          delay(100);
-
-
-
-          left_LED.setColor(0,
-0, 0);
-
-          left_LED.show();
-
-
-
-          delay(100);
-
-
-
-          left_LED.setColor(0,
-255, 0);
-
-          left_LED.show();
-
-
-
-          delay(100);
-
-
-
-          left_LED.setColor(0,
-0, 0);
-
-          left_LED.show();
-
-
-
-          PAUSED = false;
-
-
-
-          delay(500);
-
-        }
-
-        else
-
-        {
-
-          left_LED.setColor(255,
-0, 0);
-
-          left_LED.show();
-
-
-
-          delay(100);
-
-
-
-          left_LED.setColor(0,
-0, 0);
-
-          left_LED.show();
-
-
-
-          delay(500);
-
-        }
-
-      }
-
-      else
-
-      {
-
-        left_LED.setColor(255,
-0, 0);
-
-        left_LED.show();
-
-
-
-        delay(100);
-
-
-
-        left_LED.setColor(0,
-0, 0);
-
-        left_LED.show();
-
-
-
-        delay(500);
+        return 
+true;
 
       }
 
     }
 
-    else
-
-    {
-
-      left_LED.setColor(255,
-0, 0);
-
-      left_LED.show();
-
-
-
-      delay(100);
-
-
-
-      left_LED.setColor(0,
-0, 0);
-
-      left_LED.show();
-
-
-
-      delay(500);
-
-    }
-
   }
 
-  else
+  
 
-  {
-
-    left_LED.setColor(255,
-0, 0);
-
-    left_LED.show();
-
-
-
-    delay(100);
-
-
-
-    left_LED.setColor(0,
-0, 0);
-
-    left_LED.show();
-
-
-
-    delay(500);
-
-
-
-  }
-
-
-
-  delay(2000);
+  return 
+false;
 
 }
 
@@ -715,9 +524,9 @@ setup()
 
   // put your setup code here, to run once:
 
-  pinMode(leftLine, INPUT);
+  //pinMode(leftLine, INPUT);
 
-  pinMode(rightLine, INPUT);
+  //pinMode(rightLine, INPUT);
 
 
 
@@ -739,9 +548,9 @@ setup()
 
 
 
-  //Serial.begin(9600);
+  Serial.begin(9600);
 
-  //Serial.println(count);
+  Serial.println(count);
 
 }
 
@@ -751,32 +560,16 @@ void
 loop() 
 {
 
-
-
-  left_LED.setColor(0,
-0, 0);
-
-  right_LED.setColor(0,
-0, 0);
-
-
-
-  left_LED.show();
-
-  right_LED.show();
-
-
-
   while(count <
 3)
 
   {
 
-    lineFollower(60);
+    lineFollower(75);
 
 
 
-    //Serial.println(count);
+    Serial.println(count);
 
 
 
@@ -789,8 +582,6 @@ loop()
       delay(250);
 
     }
-
-
 
   }
 
@@ -868,6 +659,71 @@ loop()
 
 
 
+  //LED pulse to signal Hand Signal Read mode
+
+  // i just put random colors
+
+  left_LED.setColor(100,
+100, 200);
+
+  left_LED.show();
+
+
+
+  delay(250);
+
+
+
+  left_LED.setColor(100,
+0, 20);
+
+  left_LED.show();
+
+
+
+  delay(250);
+
+
+
+  right_LED.setColor(200,
+100, 0);
+
+  left_LED.setColor(0,
+0, 0);
+
+  left_LED.show();
+
+  right_LED.show();
+
+
+
+  delay(250);
+
+
+
+  right_LED.setColor(0,
+0, 0);
+
+  right_LED.show();
+
+  left_LED.setColor(50,
+50, 60);
+
+  left_LED.show();
+
+
+
+  delay(250);
+
+
+
+  left_LED.setColor(0,
+0, 0);
+
+  left_LED.show();
+
+
+
   //LED pulse to signal Hand Signal Read Mode
 
   // one for incorrect, one for correct
@@ -876,7 +732,99 @@ loop()
 
   {
 
-    handSignal();
+    delay(1000);
+
+    if(handSignal())
+
+    {
+
+      PAUSED = false;
+
+
+
+      left_LED.setColor(0,
+255, 0);
+
+      left_LED.show();
+
+
+
+      delay(500);
+
+
+
+      left_LED.setColor(0,
+0, 0);
+
+      left_LED.show();
+
+
+
+      delay(100);
+
+
+
+      left_LED.setColor(0,
+255, 0);
+
+      left_LED.show();
+
+
+
+      delay(500);
+
+
+
+      left_LED.setColor(0,
+0, 0);
+
+      left_LED.show();
+
+    }
+
+    else
+
+    {
+
+      left_LED.setColor(255,
+0, 0);
+
+      left_LED.show();
+
+
+
+      delay(500);
+
+
+
+      left_LED.setColor(0,
+0, 0);
+
+      left_LED.show();
+
+
+
+      delay(500);
+
+
+
+      left_LED.setColor(255,
+0, 0);
+
+      left_LED.show();
+
+
+
+      delay(500);
+
+
+
+      left_LED.setColor(0,
+0, 0);
+
+      left_LED.show();
+
+    }
 
   }
 
@@ -914,7 +862,7 @@ loop()
 
   {
 
-    lineFollower(60);
+    lineFollower(75);
 
 
 
@@ -935,587 +883,99 @@ loop()
   // end demo
 
   stop();
-
-
-
-  // buffer to turn off robot
-
-  delay(10000);
-
-
-
-  
-
-  /*
-
-  if (leftCollision.isCollision() && rightCollision.isCollision()) {
-
-
-
-    FOLLOW = false;
-
-
-
-    AVOID = false;
-
-
-
-  } else if (leftCollision.isCollision()) {
-
-
-
-    FOLLOW = false;
-
-
-
-    AVOID = true;
-
-
-
-  } else if (rightCollision.isCollision()) {
-
-
-
-    FOLLOW = true;
-
-
-
-    AVOID = false;
-
-
-
-  }
-
-
-
- 
-
-
-
-  if (AVOID == true) {
-
-
-
-    obstacleAvoidance(75);
-
-
-
-  } else if (FOLLOW == true) {
-
-
-
-    lineFollower(50);
-
-
-
-  } else if (FOLLOW == false && AVOID == false) {
-
-
-
-    stop();
-
-
-
-  }
-
-  */
-
-
-
-}
-
-
-On Sun, Jul 30, 2023 at 11:10 PM Alfonsus Rahardjo <alrahardjo@gmail.com> wrote:
-Here's what I had this weekend. I have everything sort of down and working except for the Hand Signal part after the Obstacle Avoidance. 
-
-//all files need to be in project directory to access library functions
-#include <Arduino.h>
-#include <Wire.h>
-#include <SoftwareSerial.h>
-#include "MeSingleLineFollower.h"
-#include "MeCollisionSensor.h"
-#include "MeBarrierSensor.h"
-#include "MeNewRGBLed.h"
-#include <MeMegaPi.h>
-
-uint8_t leftLine = A9;
-uint8_t rightLine = A10;
-
-MeMegaPiDCMotor motor1(PORT1A);
-MeMegaPiDCMotor motor2(PORT1B);
-MeMegaPiDCMotor motor3(PORT2A);
-MeMegaPiDCMotor motor4(PORT2B);
-
-MeCollisionSensor leftCollision(A11);
-MeCollisionSensor rightCollision(A12); 
-
-MeBarrierSensor leftBarrier(A6);
-MeBarrierSensor middleBarrier(A7);
-MeBarrierSensor rightBarrier(A8);
-
-MeNewRGBLed left_LED(A13, 4);
-MeNewRGBLed right_LED(A14, 4);
-
-MeLineFollower lineFinder(PORT_3); /* Line Finder module can only be connected to PORT_3, PORT_4, PORT_5, PORT_6 of base shield. */
-
-int count;
-
-bool FOLLOW;
-bool AVOID;
-bool PAUSED;
- 
-void forward(uint16_t speed) {
-
-  motor1.run(speed);
-  motor2.run(speed);
-  motor3.run(-speed);
-  motor4.run(-speed);
-}
-
- 
-
-void backward(uint16_t speed) {
-
-  motor1.run(-speed);
-  motor2.run(-speed);
-  motor3.run(speed);
-  motor4.run(speed);
-}
-
-void right(uint16_t speed) {
-
-  motor1.run(-speed);
-  motor2.run(speed);
-  motor3.run(-speed);
-  motor4.run(speed);
-}
-
-void left(uint16_t speed) {
-  motor1.run(speed);
-  motor2.run(-speed);
-  motor3.run(speed);
-  motor4.run(-speed);
-}
-
-void oneEighty(uint16_t speed)
-{
-  
-}
-
-void rotateLeft(uint16_t speed) {
-  motor1.run(speed);
-  motor2.run(speed);
-  motor3.run(speed);
-  motor4.run(speed);
-}
-
-void rotateRight(uint16_t speed) {
-  motor1.run(-speed);
-  motor2.run(-speed);
-  motor3.run(-speed);
-  motor4.run(-speed);
-}
-
- 
-
-void stop() {
-  motor1.stop();
-  motor2.stop();
-  motor3.stop();
-  motor4.stop();
-}
-
-void obstacleAvoidance(uint16_t speed) {
-
-  while (!leftBarrier.isBarried() && !rightBarrier.isBarried()) {
-
-    forward(speed);
-
-  }
-
-  if (leftBarrier.isBarried() && rightBarrier.isBarried()) 
-  {
-    // hand gesture will be "push away" twice
-    delay(250);
-
-    if (leftBarrier.isBarried() && rightBarrier.isBarried()) 
-    {
-      AVOID = false;
-    }
-    else
-    {
-      left(speed);
-    }
-
-  } else if (rightBarrier.isBarried()) {
-
-    backward(speed);
-
-    delay(500);
-
-    rotateLeft(speed);
-
-    delay(750);
-
-    Serial.println("Right is barried");
-
-  } else if (middleBarrier.isBarried()) {
-
-    backward(speed);
-
-    delay(500);
-
-    right(speed);
-
-    delay(750);
-
-    Serial.println("Middle is barried");
-
-  } else if (leftBarrier.isBarried()) {
-
-    backward(speed);
-
-    delay(500);
-
-    rotateRight(speed);
-
-    delay(750);
-
-    Serial.println("Left is barried");
-
-  }
-
-}
-
-void lineFollower(uint16_t speed) {
-
-  int dataLeft = analogRead(leftLine);
-
-  int dataRight = analogRead(rightLine);
-
-  if ((dataLeft == 0) && (dataRight == 0)) 
-  {
-
-    forward(speed);
-
-  } 
-  else if ((dataLeft == 0) && (dataRight != 0)) 
-  {
-
-    rotateLeft(speed);
-
-  } 
-  else if ((dataLeft != 0) && (dataRight == 0)) 
-  {
-    rotateRight(speed);
-  }
-  else 
-  {
-    rotateRight(speed);
-  }
-
-}
-
-void setup() {
-  // put your setup code here, to run once:
-  pinMode(leftLine, INPUT);
-  pinMode(rightLine, INPUT);
 
   count = 0;
+
   FOLLOW = true;
+
   AVOID = false;
+
   PAUSED = false;
 
-  //pinMode(proximitySensor1, OUTPUT);
 
-  Serial.begin(9600);
-  //Serial.println(count);
-}
-
-void loop() {
-
-  left_LED.setColor(0, 0, 0);
-  right_LED.setColor(0, 0, 0);
-
-  left_LED.show();
-  right_LED.show();
-
-  while(count < 3)
-  {
-    lineFollower(60);
-
-    //Serial.println(count);
-
-    if(leftCollision.isCollision())
-    {
-      count+=1;
-      delay(250);
-    }
-
-  }
-
-  stop();
-  FOLLOW = false;
-  AVOID = true;
-  delay(1000);
-  
-
-  while(AVOID)
-  {
-    obstacleAvoidance(75);
-  }
-
-  stop();
-  delay(3000);
-
-  // here, flashes LED Signal to verify robot is correct robot and not fake
-  // just going to try to use RGB (blue, then yellow)
-  left_LED.setColor(10, 100, 200);
-  left_LED.show();
-
-  delay(1000);
-
-  right_LED.setColor(200, 100, 0);
-  left_LED.setColor(0, 0, 0);
-  left_LED.show();
-  right_LED.show();
-
-  delay(1000);
-
-  right_LED.setColor(0, 0, 0);
-  right_LED.show();
-
-  delay(3000);
-
-  //LED pulse to signal Hand Signal Read Mode
-  // one for incorrect, one for correct
-
-  
-
-  // press left impact switch once to pause and place CD on top of robot
-  // press again to follow line after placing robot on line
-  while(count < 5)
-  {
-    if(leftCollision.isCollision())
-    {
-      count+=1;
-      delay(250);
-    }
-  }
-
-  // robot follows line until the end
-  while(count < 6)
-  {
-    lineFollower(60);
-
-    if(leftCollision.isCollision())
-    {
-      count+=1;
-      delay(250);
-    }
-  }
-
-  // end demo
-  stop();
 
   // buffer to turn off robot
+
   delay(10000);
 
+
+
   
+
   /*
+
   if (leftCollision.isCollision() && rightCollision.isCollision()) {
+
+
 
     FOLLOW = false;
 
+
+
     AVOID = false;
+
+
 
   } else if (leftCollision.isCollision()) {
 
+
+
     FOLLOW = false;
+
+
 
     AVOID = true;
 
+
+
   } else if (rightCollision.isCollision()) {
+
+
 
     FOLLOW = true;
 
+
+
     AVOID = false;
 
+
+
   }
+
+
 
  
 
+
+
   if (AVOID == true) {
+
+
 
     obstacleAvoidance(75);
 
+
+
   } else if (FOLLOW == true) {
+
+
 
     lineFollower(50);
 
+
+
   } else if (FOLLOW == false && AVOID == false) {
+
+
 
     stop();
 
+
+
   }
+
   */
 
-}
 
-On Wed, Jul 26, 2023 at 9:07 PM McKenna, Gavin Patrick <gpm49@miami.edu> wrote:
- 
-//all files need to be in project directory to access library functions
-#include <Arduino.h>
-#include <Wire.h>
-#include <SoftwareSerial.h>
-#include "MeSingleLineFollower.h"
-#include "MeCollisionSensor.h"
-#include "MeBarrierSensor.h"
-#include "MeNewRGBLed.h"
-#include <MeMegaPi.h>
- 
-uint8_t leftLine = A9;
-uint8_t rightLine = A10;
- 
-MeMegaPiDCMotor motor1(PORT1A);
-MeMegaPiDCMotor motor2(PORT1B);
-MeMegaPiDCMotor motor3(PORT2A);
-MeMegaPiDCMotor motor4(PORT2B);
- 
-MeCollisionSensor leftCollision(A11);
-MeCollisionSensor rightCollision(A12);
- 
-MeBarrierSensor leftBarrier(A6);
-MeBarrierSensor middleBarrier(A7);
-MeBarrierSensor rightBarrier(A8);
- 
-MeNewRGBLed left_LED(A13, 4);
-MeNewRGBLed right_LED(A14, 4);
- 
-MeLineFollower lineFinder(PORT_3); /* Line Finder module can only be connected to PORT_3, PORT_4, PORT_5, PORT_6 of base shield. */
- 
-bool FOLLOW;
-bool AVOID;
- 
-void setup() {
-  // put your setup code here, to run once:
-  pinMode(leftLine, INPUT);
-  pinMode(rightLine, INPUT);
-  FOLLOW = false;
-  AVOID = false;
-  //pinMode(proximitySensor1, OUTPUT);
- 
-  //Serial.begin(9600);
+
 }
- 
-void forward(uint16_t speed) {
-  motor1.run(speed);
-  motor2.run(speed);
-  motor3.run(-speed);
-  motor4.run(-speed);
-}
- 
-void backward(uint16_t speed) {
-  motor1.run(-speed);
-  motor2.run(-speed);
-  motor3.run(speed);
-  motor4.run(speed);
-}
- 
-void right(uint16_t speed) {
-  motor1.run(-speed);
-  motor2.run(speed);
-  motor3.run(-speed);
-  motor4.run(speed);
-}
- 
-void left(uint16_t speed) {
-  motor1.run(speed);
-  motor2.run(-speed);
-  motor3.run(speed);
-  motor4.run(-speed);
-}
- 
-void rotateLeft(uint16_t speed) {
-  motor1.run(speed);
-  motor2.run(speed);
-  motor3.run(speed);
-  motor4.run(speed);
-}
- 
-void rotateRight(uint16_t speed) {
-  motor1.run(-speed);
-  motor2.run(-speed);
-  motor3.run(-speed);
-  motor4.run(-speed);
-}
- 
-void stop() {
-  motor1.stop();
-  motor2.stop();
-  motor3.stop();
-  motor4.stop();
-}
- 
-void obstacleAvoidance(uint16_t speed) {
-  while (!leftBarrier.isBarried() && !rightBarrier.isBarried()) {
-    forward(speed);
-  }
-  if (leftBarrier.isBarried() && rightBarrier.isBarried()) {
-    left(speed);
-  } else if (rightBarrier.isBarried()) {
-    backward(speed);
-    delay(500);
-    rotateLeft(speed);
-    delay(750);
-  } else if (middleBarrier.isBarried()) {
-    backward(speed);
-    delay(500);
-    right(speed);
-    delay(750);
-  } else if (leftBarrier.isBarried()) {
-    backward(speed);
-    delay(500);
-    rotateRight(speed);
-    delay(750);
-  }
-}
- 
-void lineFollower(uint16_t speed) {
-  int dataLeft = analogRead(leftLine);
-  int dataRight = analogRead(rightLine);
- 
-  if ((dataLeft == 0) && (dataRight == 0)) {
-    forward(speed);
-  } else if ((dataLeft == 0) && (dataRight != 0)) {
-    rotateLeft(speed);
-  } else if ((dataLeft != 0) && (dataRight == 0)) {
-    rotateRight(speed);
-  }
- 
-  else {
-    rotateRight(speed);
-  }
-}
- 
-void loop() {
-  if (leftCollision.isCollision() && rightCollision.isCollision()) {
-    FOLLOW = false;
-    AVOID = false;
-  } else if (leftCollision.isCollision()) {
-    FOLLOW = false;
-    AVOID = true;
-  } else if (rightCollision.isCollision()) {
-    FOLLOW = true;
-    AVOID = false;
-  }
- 
-  if (AVOID == true) {
-    obstacleAvoidance(75);
-  } else if (FOLLOW == true) {
-    lineFollower(50);
-  } else if (FOLLOW == false && AVOID == false) {
-    stop();
-  }
-}
- 
