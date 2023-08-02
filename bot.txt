@@ -1,981 +1,308 @@
-#include 
-<Arduino.h>
-
-#include 
-<Wire.h>
-
-#include 
-<SoftwareSerial.h>
-
-#include 
-"MeSingleLineFollower.h"
-
-#include 
-"MeCollisionSensor.h"
-
-#include 
-"MeBarrierSensor.h"
-
-#include 
-"MeNewRGBLed.h"
-
-#include 
-<MeMegaPi.h>
-
-
-
-//uint8_t leftLine = A9;
-
-//uint8_t rightLine = A10;
-
-
+#include <Arduino.h>
+#include <Wire.h>
+#include <SoftwareSerial.h>
+#include "MeSingleLineFollower.h"
+#include "MeCollisionSensor.h"
+#include "MeBarrierSensor.h"
+#include "MeNewRGBLed.h"
+#include <MeMegaPi.h>
 
 MeMegaPiDCMotor motor1(PORT1A);
-
 MeMegaPiDCMotor motor2(PORT1B);
-
 MeMegaPiDCMotor motor3(PORT2A);
-
 MeMegaPiDCMotor motor4(PORT2B);
 
-
-
 MeCollisionSensor leftCollision(A11);
-
 MeCollisionSensor rightCollision(A12);
-
-
-
 MeBarrierSensor leftBarrier(A6);
-
 MeBarrierSensor middleBarrier(A7);
-
 MeBarrierSensor rightBarrier(A8);
 
-
-
-MeNewRGBLed left_LED(A13,
-4);
-
-MeNewRGBLed right_LED(A14,
-4);
-
-
-
+MeNewRGBLed left_LED(A13,4);
+MeNewRGBLed right_LED(A14,4);
 MeSingleLineFollower leftLineFinder(A9); /* Line Finder module can only be connected to PORT_3,
  PORT_4, PORT_5, PORT_6 of base shield. */
-
 MeSingleLineFollower rightLineFinder(A10);
 
-
-
 int count;
-
-
-
 bool FOLLOW;
-
 bool AVOID;
-
 bool PAUSED;
 
- 
-
-void 
-forward(uint16_t
-speed) 
+void forward(uint16_t speed) 
 {
-
-
-
   motor1.run(speed);
-
   motor2.run(speed);
-
   motor3.run(-speed);
-
   motor4.run(-speed);
-
 }
 
-
-
- 
-
-
-
-void 
-backward(uint16_t
-speed) 
+void backward(uint16_t speed) 
 {
-
-
-
   motor1.run(-speed);
-
   motor2.run(-speed);
-
   motor3.run(speed);
-
   motor4.run(speed);
-
 }
 
-
-
-void 
-right(uint16_t
-speed) 
+void right(uint16_t speed) 
 {
-
-
-
   motor1.run(-speed);
-
   motor2.run(speed);
-
   motor3.run(-speed);
-
   motor4.run(speed);
-
 }
 
-
-
-
-
-void 
-left(uint16_t
-speed) 
+void left(uint16_t speed) 
 {
-
   motor1.run(speed);
-
   motor2.run(-speed);
-
   motor3.run(speed);
-
   motor4.run(-speed);
-
 }
 
-
-
-
-
-void 
-rotateLeft(uint16_t
-speed) 
+void rotateLeft(uint16_t speed) 
 {
-
   motor1.run(speed);
-
   motor2.run(speed);
-
   motor3.run(speed);
-
   motor4.run(speed);
-
 }
 
-
-
-
-
-void 
-rotateRight(uint16_t
-speed) 
+void rotateRight(uint16_t speed) 
 {
-
   motor1.run(-speed);
-
   motor2.run(-speed);
-
   motor3.run(-speed);
-
   motor4.run(-speed);
-
 }
 
-
-
- 
-
-
-
-void 
-stop() 
+void stop() 
 {
-
   motor1.stop();
-
   motor2.stop();
-
   motor3.stop();
-
   motor4.stop();
-
 }
 
-
-
-
-
-void 
-obstacleAvoidance(uint16_t
-speed) 
+void obstacleAvoidance(uint16_t speed) 
 {
-
-
-
-  while 
-(!leftBarrier.isBarried() && !rightBarrier.isBarried())
-{
-
-
-
-    forward(speed);
-
-
-
-  }
-
-
-
-  if 
-(leftBarrier.isBarried() &&
-rightBarrier.isBarried())
-
+  while (!leftBarrier.isBarried() && !rightBarrier.isBarried())
   {
-
+    forward(speed);
+  }
+  if (leftBarrier.isBarried() &&rightBarrier.isBarried())
+  {
     // hand gesture will be "push away" twice
-
     delay(100);
-
-
-
-    if 
-(leftBarrier.isBarried() &&
-rightBarrier.isBarried())
-
+    if (leftBarrier.isBarried() &&rightBarrier.isBarried())
     {
-
-      AVOID = false;
-
+       AVOID = false;
     }
-
     else
-
     {
-
       left(speed);
-
     }
-
-
-
   } 
-else if 
-(rightBarrier.isBarried())
+else if (rightBarrier.isBarried())
 {
-
-
-
     backward(speed);
-
-
-
     delay(750);
-
-
-
     rotateLeft(speed);
-
-
-
     delay(1000);
-
-
-
     Serial.println("Right is barried");
-
-
-
   } 
-else if 
-(middleBarrier.isBarried())
+else if (middleBarrier.isBarried())
 {
-
-
-
     backward(speed);
-
-
-
     delay(750);
-
-
-
     right(speed);
-
-
-
     delay(1000);
-
-
-
     Serial.println("Middle is barried");
-
-
-
   } 
-else if 
-(leftBarrier.isBarried())
+else if (leftBarrier.isBarried())
 {
-
-
-
     backward(speed);
-
-
-
     delay(750);
-
-
-
     rotateRight(speed);
-
-
-
     delay(1000);
-
-
-
     Serial.println("Left is barried");
-
-
-
   }
-
-
-
 }
 
-
-
-void 
-lineFollower(uint16_t
-speed) 
+void lineFollower(uint16_tspeed) 
 {
-
-
-
-  if((leftLineFinder.onLine()) &&
-(rightLineFinder.onLine()))
-
+  if((leftLineFinder.onLine()) &&(rightLineFinder.onLine()))
   {
-
     forward(speed);
-
   }
-
   else 
-if ((leftLineFinder.onLine()) &&
-(!rightLineFinder.onLine()))
-
+if ((leftLineFinder.onLine()) && (!rightLineFinder.onLine()))
   {
-
     rotateLeft(speed);
-
   }
-
   else 
-if ((!leftLineFinder.onLine()) &&
-(rightLineFinder.onLine()))
-
+if ((!leftLineFinder.onLine()) &&(rightLineFinder.onLine()))
   {
-
     rotateRight(speed);
-
   }
-
   else
-
   {
-
     rotateLeft(speed);
 
   }
-
-
-
-  /*
-
-
-
-  int dataLeft = analogRead(leftLine);
-
-
-
-  int dataRight = analogRead(rightLine);
-
-
-
-
-
-  if ((dataLeft == 0) && (dataRight == 0))
-
-  {
-
-
-
-    forward(speed);
-
-
-
-  } 
-
-  else if ((dataLeft == 0) && (dataRight != 0))
-
-  {
-
-
-
-    rotateLeft(speed);
-
-
-
-  } 
-
-  else if ((dataLeft != 0) && (dataRight == 0))
-
-  {
-
-    rotateRight(speed);
-
-  }
-
-  else 
-
-  {
-
-    rotateLeft(speed);
-
-  }
-
-  */
-
-
-
 }
 
-
-
-bool 
-handSignal()
-
+bool handSignal()
 {
-
-
-
   if(rightBarrier.isBarried())
-
   {
-
     delay(1000);
-
-
-
-    //correct signal is now both left and right, then just right
-
     if(rightBarrier.isBarried())
-
     {
-
       delay(1000);
 
-
-
       if(leftBarrier.isBarried())
-
       {
-
-        return 
-true;
-
+        return true;
       }
-
     }
-
-  }
-
-  
-
-  return 
-false;
-
+  } 
+  return false;
 }
 
-
-
-void 
-setup() 
+void setup() 
 {
-
-  // put your setup code here, to run once:
-
-  //pinMode(leftLine, INPUT);
-
-  //pinMode(rightLine, INPUT);
-
-
-
   count = 0;
-
   FOLLOW = true;
-
   AVOID = false;
-
   PAUSED = false;
-
-
-
-  //pinMode(A6, OUTPUT);
-
-
-
-  //pinMode(proximitySensor1, OUTPUT);
-
-
-
   Serial.begin(9600);
-
   Serial.println(count);
-
 }
 
-
-
-void 
-loop() 
+void loop() 
 {
-
-  while(count <
-3)
-
+  while(count <3)
   {
-
     lineFollower(75);
-
-
-
     Serial.println(count);
-
-
-
     if(leftCollision.isCollision())
-
     {
-
       count+=1;
-
       delay(250);
-
     }
-
   }
-
-
-
   stop();
-
   FOLLOW = false;
-
   AVOID = true;
-
   delay(1000);
-
-  
-
-
-
   while(AVOID)
-
   {
-
     obstacleAvoidance(75);
-
   }
-
-
-
   stop();
-
   delay(3000);
-
-
 
   // here, flashes LED Signal to verify robot is correct robot and not fake
 
   // just going to try to use RGB (blue, then yellow)
 
-  left_LED.setColor(10,
-100, 200);
-
+  left_LED.setColor(10, 100, 200);
   left_LED.show();
-
-
-
   delay(1000);
-
-
-
-  right_LED.setColor(200,
-100, 0);
-
-  left_LED.setColor(0,
-0, 0);
-
+  right_LED.setColor(200,100, 0);
+  left_LED.setColor(0,0, 0);
   left_LED.show();
-
   right_LED.show();
-
-
-
   delay(1000);
-
-
-
-  right_LED.setColor(0,
-0, 0);
-
+  right_LED.setColor(0,0, 0);
   right_LED.show();
-
-
-
   PAUSED = true;
-
   delay(3000);
-
-
-
   //LED pulse to signal Hand Signal Read mode
-
   // i just put random colors
-
-  left_LED.setColor(100,
-100, 200);
-
+  left_LED.setColor(100,100, 200);
   left_LED.show();
-
-
-
   delay(250);
-
-
-
-  left_LED.setColor(100,
-0, 20);
-
+  left_LED.setColor(100,0, 20);
   left_LED.show();
-
-
-
   delay(250);
-
-
-
-  right_LED.setColor(200,
-100, 0);
-
-  left_LED.setColor(0,
-0, 0);
-
+  right_LED.setColor(200,100, 0);
+  left_LED.setColor(0,0, 0);
   left_LED.show();
-
   right_LED.show();
-
-
-
   delay(250);
-
-
-
-  right_LED.setColor(0,
-0, 0);
-
+  right_LED.setColor(0,0, 0);
   right_LED.show();
-
-  left_LED.setColor(50,
-50, 60);
-
+  left_LED.setColor(50,50, 60);
   left_LED.show();
-
-
-
   delay(250);
-
-
-
-  left_LED.setColor(0,
-0, 0);
-
+  left_LED.setColor(0,0, 0);
   left_LED.show();
-
-
-
   //LED pulse to signal Hand Signal Read Mode
 
   // one for incorrect, one for correct
-
   while(PAUSED)
-
   {
-
     delay(1000);
-
     if(handSignal())
-
     {
-
       PAUSED = false;
-
-
-
-      left_LED.setColor(0,
-255, 0);
-
+      left_LED.setColor(0,255, 0);
       left_LED.show();
-
-
-
       delay(500);
-
-
-
-      left_LED.setColor(0,
-0, 0);
-
+      left_LED.setColor(0,0, 0);
       left_LED.show();
-
-
-
       delay(100);
-
-
-
-      left_LED.setColor(0,
-255, 0);
-
+      left_LED.setColor(0,255, 0);
       left_LED.show();
-
-
-
       delay(500);
-
-
-
-      left_LED.setColor(0,
-0, 0);
-
+      left_LED.setColor(0,0, 0);
       left_LED.show();
-
     }
-
     else
-
     {
-
-      left_LED.setColor(255,
-0, 0);
-
+      left_LED.setColor(255,0, 0);
       left_LED.show();
-
-
-
       delay(500);
-
-
-
-      left_LED.setColor(0,
-0, 0);
-
+      left_LED.setColor(0,0, 0);
       left_LED.show();
-
-
-
       delay(500);
-
-
-
-      left_LED.setColor(255,
-0, 0);
-
+      left_LED.setColor(255,0, 0);
       left_LED.show();
-
-
-
       delay(500);
-
-
-
-      left_LED.setColor(0,
-0, 0);
-
+      left_LED.setColor(0,0, 0);
       left_LED.show();
-
     }
-
   }
-
-  
-
-
-
   // press left impact switch once to pause and place CD on top of robot
 
   // press again to follow line after placing robot on line
-
-  while(count <
-5)
-
+  while(count <5)
   {
-
     if(leftCollision.isCollision())
-
     {
-
       count+=1;
-
       delay(250);
-
     }
-
   }
-
-
-
   // robot follows line until the end
-
-  while(count <
-6)
-
+  while(count <6)
   {
-
     lineFollower(75);
-
-
-
     if(leftCollision.isCollision())
-
     {
-
       count+=1;
-
       delay(250);
-
     }
-
   }
-
-
-
   // end demo
-
   stop();
-
   count = 0;
-
   FOLLOW = true;
-
   AVOID = false;
-
   PAUSED = false;
-
-
-
   // buffer to turn off robot
-
   delay(10000);
-
-
-
-  
-
-  /*
-
-  if (leftCollision.isCollision() && rightCollision.isCollision()) {
-
-
-
-    FOLLOW = false;
-
-
-
-    AVOID = false;
-
-
-
-  } else if (leftCollision.isCollision()) {
-
-
-
-    FOLLOW = false;
-
-
-
-    AVOID = true;
-
-
-
-  } else if (rightCollision.isCollision()) {
-
-
-
-    FOLLOW = true;
-
-
-
-    AVOID = false;
-
-
-
-  }
-
-
-
- 
-
-
-
-  if (AVOID == true) {
-
-
-
-    obstacleAvoidance(75);
-
-
-
-  } else if (FOLLOW == true) {
-
-
-
-    lineFollower(50);
-
-
-
-  } else if (FOLLOW == false && AVOID == false) {
-
-
-
-    stop();
-
-
-
-  }
-
-  */
-
-
-
 }
